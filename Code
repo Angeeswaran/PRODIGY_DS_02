@@ -1,0 +1,69 @@
+# Import necessary libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the dataset
+df = pd.read_csv('/content/train.csv')
+
+# Step 2: Data Cleaning
+
+# Handle missing values
+df['Age'].fillna(df['Age'].median(), inplace=True)
+df['Cabin'].fillna('Unknown', inplace=True)
+df['Embarked'].fillna(df['Embarked'].mode()[0], inplace=True)
+
+# Correct data types if necessary
+df['PassengerId'] = df['PassengerId'].astype(str)
+
+# Handle outliers in 'Fare'
+q1 = df['Fare'].quantile(0.25)
+q3 = df['Fare'].quantile(0.75)
+iqr = q3 - q1
+lower_bound = q1 - 1.5 * iqr
+upper_bound = q3 + 1.5 * iqr
+df['Fare'] = df['Fare'].apply(lambda x: upper_bound if x > upper_bound else (lower_bound if x < lower_bound else x))
+
+# Step 3: Exploratory Data Analysis (EDA)
+
+# Univariate Analysis
+# Survival Rate
+df['Survived'].value_counts(normalize=True).plot(kind='bar')
+plt.title('Survival Rate')
+plt.xlabel('Survived')
+plt.ylabel('Proportion')
+plt.show()
+
+# Age Distribution
+df['Age'].plot(kind='hist', bins=30)
+plt.title('Age Distribution')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Bivariate Analysis
+# Survival Rate by Sex
+sns.barplot(x='Sex', y='Survived', data=df)
+plt.title('Survival Rate by Sex')
+plt.xlabel('Sex')
+plt.ylabel('Survival Rate')
+plt.show()
+
+# Survival Rate by Class
+sns.barplot(x='Pclass', y='Survived', data=df)
+plt.title('Survival Rate by Class')
+plt.xlabel('Class')
+plt.ylabel('Survival Rate')
+plt.show()
+
+# Multivariate Analysis
+# Survival Rate by Age and Sex
+sns.violinplot(x='Sex', y='Age', hue='Survived', data=df, split=True)
+plt.title('Survival Rate by Age and Sex')
+plt.xlabel('Sex')
+plt.ylabel('Age')
+plt.show()
+
+# Pairplot of Numerical Features
+sns.pairplot(df[['Survived', 'Age', 'Fare', 'Pclass']], hue='Survived')
+plt.show()
